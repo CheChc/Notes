@@ -194,6 +194,32 @@ etc文件夹包含了各种应用程序、服务和用户配置信息等等。
 
 `git remotrm origin`
 
+## 5、分支控制
+
+### 1、分支的创建
+
+`git branch name`
+
+`git checkout name`
+
+*创建分支并进入*
+
+`git checkout -b name`
+
+### 2、分支的合并
+
+`git merge name`
+
+### 3、分支的删除
+
+`git branch -d name`
+
+### 4、分支的查看
+
+`git branch`
+
+# 6、数据库SQL
+
 ## 1、数据库的创建和显示
 
 `create database [name]`
