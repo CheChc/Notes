@@ -186,6 +186,10 @@ etc文件夹包含了各种应用程序、服务和用户配置信息等等。
 2、关联自己的仓库 `git remote add origin http…`
 3、最后`git push origin main`，这样就推送到自己的仓库了
 
+*覆盖提交*
+
+`git push -f origin main`
+
 ### 2、查看相关远程库
 
 `git remote -v`
