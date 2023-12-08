@@ -192,7 +192,7 @@ etc文件夹包含了各种应用程序、服务和用户配置信息等等。
 
 ### 3、删除远程库
 
-`git remote rm origin`
+`git remotrm origin`
 
 ## 1、数据库的创建和显示
 
