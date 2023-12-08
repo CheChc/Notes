@@ -1,0 +1,376 @@
+# tcp程序示例
+
+## 1.server端
+
+``` C
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define PORT 8888
+#define BUFFER_SIZE 1024
+
+int main()
+{
+    int listenfd, connfd;//监听套接字，连接套接字
+    struct sockaddr_in server_addr, client_addr;//存储IP地址，server和client
+    socklen_t client_len;//存储客户端地址结构体的长度
+    char buffer[BUFFER_SIZE];//存储发送的数据
+
+    // 创建套接字
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);//ipv4，tcp，默认
+    if (listenfd == -1) {
+        perror("socket");
+        exit(EXIT_FAILURE);
+    }
+
+    // 设置服务器地址
+    memset(&server_addr, 0, sizeof(server_addr));//将addr的内存清空
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    // 绑定套接字
+    if (bind(listenfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+        perror("bind");
+        exit(EXIT_FAILURE);
+    }//将服务器套接字绑定到服务器地址上
+
+    // 监听连接请求
+    if (listen(listenfd, 10) == -1) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Server listening on port %d...\n", PORT);
+
+    // 接受连接请求
+    client_len = sizeof(client_addr);
+    connfd = accept(listenfd, (struct sockaddr *)&client_addr, &client_len);
+    if (connfd == -1) {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Connected with client: %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+    while (1) {
+        // 从客户端接收数据
+        ssize_t n = read(connfd, buffer, BUFFER_SIZE);
+        if (n > 0) {
+            printf("Received from client: %s", buffer);
+
+            // 向客户端发送响应
+            write(connfd, buffer, n);
+        } else if (n == 0) {
+            printf("Connection closed by the client.\n");
+            break;
+        } else {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    close(connfd);
+    close(listenfd);
+
+    return 0;
+}
+```
+
+### bind函数：
+
+`bind()` 函数是用于将一个套接字与特定的地址进行绑定的操作。它将一个本地地址（包括 IP 地址和端口号）与套接字相关联，使得该套接字能够监听和接受来自该地址的连接请求，或者发送数据到该地址。
+
+函数原型如下所示：
+
+```c
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+```
+
+- `sockfd`：要绑定的套接字描述符。
+- `addr`：指向要绑定的地址结构体的指针，通常是 `struct sockaddr` 类型的指针。
+- `addrlen`：指定地址结构体的长度。
+
+`bind()` 函数通常在服务器端使用。服务器在启动时，需要绑定一个特定的 IP 地址和端口号，以便客户端能够连接到该服务器。通过调用 `bind()` 函数，服务器将套接字与指定的地址绑定在一起，使得服务器能够监听该地址上的连接请求。
+
+如果 `bind()` 函数执行成功，它会返回 0；如果发生错误，返回值为 -1。
+
+需要注意的是，一旦套接字绑定成功，就不能再次绑定到同一个地址。如果需要重新绑定，必须先关闭之前的套接字。
+
+### listen函数：
+
+`listen()` 函数用于将一个套接字设置为监听状态，以便接受客户端的连接请求。它将套接字标记为被动套接字，即用于接受传入连接的套接字。
+
+函数原型如下所示：
+
+```c
+int listen(int sockfd, int backlog);
+```
+
+- `sockfd`：要设置为监听状态的套接字描述符。
+- `backlog`：指定等待连接队列的最大长度，即同时等待处理的连接请求的数量。
+
+`listen()` 函数通常在服务器端使用。在服务器启动后，通过调用 `listen()` 函数将套接字设置为监听状态，以准备接受客户端的连接请求。
+
+当套接字处于监听状态时，它将开始监听指定的地址和端口号，等待客户端的连接请求。连接请求将被放入等待连接队列中，等待服务器接受或拒绝处理。通过指定 `backlog` 参数，可以设置等待连接队列的最大长度，即同时等待处理的连接请求的数量。超过该数量的连接请求将被拒绝。
+
+如果 `listen()` 函数执行成功，它会返回 0；如果发生错误，返回值为 -1。在发生错误时，可以使用 `perror()` 函数输出错误信息，帮助诊断问题。
+
+需要注意的是，只有在调用 `listen()` 函数之后，才能使用 `accept()` 函数来接受客户端的连接请求。
+
+### accept函数：
+
+`accept()` 函数用于接受客户端的连接请求，并创建一个新的套接字用于与客户端进行通信。它在服务器端被调用，用于建立与客户端之间的连接。
+
+函数原型如下所示：
+
+```c
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+```
+
+- `sockfd`：监听套接字描述符，即之前通过 `listen()` 设置为监听状态的套接字描述符。
+- `addr`：指向用于存储客户端地址信息的结构体指针，通常是 `struct sockaddr` 类型的指针。
+- `addrlen`：指向表示客户端地址长度的变量的指针。在调用 `accept()` 函数时，需要将其初始化为客户端地址结构体的长度，并在接受连接后更新为实际的客户端地址长度。
+
+`accept()` 函数的调用会阻塞程序，直到有客户端连接请求到达。当有连接请求到达时，`accept()` 函数会接受该连接请求，并返回一个新的套接字描述符，即用于与客户端进行通信的套接字。这个新的套接字可以使用和普通的套接字操作一样的方式进行读写操作，用于与客户端进行数据交换。
+
+同时，`accept()` 函数会将客户端的地址信息存储在 `addr` 指向的结构体中，通过 `addrlen` 参数传递实际的客户端地址长度。
+
+如果 `accept()` 函数执行成功，它会返回一个新的套接字描述符用于与客户端通信；如果发生错误，返回值为 -1。在发生错误时，可以使用 `perror()` 函数输出错误信息，帮助诊断问题。
+
+注意：`accept()` 函数在成功接受连接请求后，会产生一个新的套接字，而原始的监听套接字仍然保持在监听状态，可以继续接受其他客户端的连接请求。
+
+## 2.client端
+
+~~~ c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define SERVER_IP "127.0.0.1"
+#define PORT 8888
+#define BUFFER_SIZE 1024
+
+int main()
+{
+    int sockfd;
+    struct sockaddr_in server_addr;//定义服务器端
+    char buffer[BUFFER_SIZE];
+
+    // 创建套接字
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);//创建ipv4下的tcp连接
+    if (sockfd == -1) {
+        perror("socket");
+        exit(EXIT_FAILURE);
+    }
+
+    // 设置服务器地址
+    memset(&server_addr, 0, sizeof(server_addr));//将内存清空
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0) {
+        perror("inet_pton");
+        exit(EXIT_FAILURE);
+    }
+
+    // 连接服务器
+    if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+        perror("connect");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1) {
+        printf("Enter message: ");
+        fgets(buffer, BUFFER_SIZE, stdin);
+
+        // 向服务器发送数据
+        write(sockfd, buffer, strlen(buffer));
+
+        // 从服务器接收响应
+        ssize_t n = read(sockfd, buffer, BUFFER_SIZE);
+        if (n > 0) {
+            printf("Received from server: %s", buffer);
+        } else if (n == 0) {
+            printf("Connection closed by the server.\n");
+            break;
+        } else {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    close(sockfd);
+
+    return 0;
+}
+
+~~~
+
+### socket函数：
+
+`socket()` 函数是一个系统调用，用于创建一个新的套接字（socket）。
+
+在C语言中，`socket()` 函数的原型如下：
+
+```c
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int socket(int domain, int type, int protocol);
+```
+
+该函数接受三个参数：
+
+1. `domain`：指定套接字的协议域（protocol family），决定了套接字的通信类型。常见的协议域包括 `AF_INET`（用于IPv4网络）、`AF_INET6`（用于IPv6网络）、`AF_UNIX`（用于本地进程间通信）等。
+
+2. `type`：指定套接字的类型，决定了套接字的特性和行为。常见的套接字类型包括 `SOCK_STREAM`（面向连接的可靠字节流套接字，如TCP）、`SOCK_DGRAM`（无连接的不可靠数据报套接字，如UDP）等。
+
+3. `protocol`：指定套接字所使用的协议。通常情况下，可以将其设置为0，表示根据 `domain` 和 `type` 参数自动选择合适的协议。
+
+`socket()` 函数返回一个整数类型的文件描述符，用于唯一标识创建的套接字。如果函数调用失败，将返回值设置为-1，并且可以通过检查 `errno` 变量来获取具体的错误信息。
+
+使用 `socket()` 函数创建套接字后，可以通过其他函数（例如 `bind()`、`listen()`、`connect()`）来设置套接字的相关属性和进行进一步的操作，以实现网络通信的需求。
+
+### connect函数：
+
+`connect()` 函数用于建立与远程服务器的连接，将本地套接字与远程服务器的套接字进行关联，从而实现网络通信。
+
+在C语言中，`connect()` 函数的原型如下：
+
+```c
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+```
+
+该函数接受三个参数：
+
+1. `sockfd`：要连接的套接字的文件描述符，即通过 `socket()` 函数创建的套接字。
+
+2. `addr`：指向目标服务器地址的指针，通常是一个 `struct sockaddr` 类型的指针，可以是 `struct sockaddr_in` 或 `struct sockaddr_in6`。需要根据套接字的协议域来进行强制类型转换。
+
+3. `addrlen`：目标服务器地址结构体的大小，以字节为单位。可以使用 `sizeof()` 运算符来获取地址结构体的大小。
+
+`connect()` 函数的执行过程如下：
+
+1. `connect()` 函数将本地套接字与目标服务器的套接字进行关联。
+
+2. 它会向目标服务器发送连接请求，并在内核中建立连接。
+
+3. 如果连接成功建立，`connect()` 函数将返回0。如果连接失败，将返回-1，并且可以通过检查 `errno` 变量来获取具体的错误信息。
+
+在连接建立后，可以使用该套接字进行数据的发送和接收。对于面向连接的套接字类型，通常在调用 `connect()` 函数后，可以通过 `read()` 和 `write()` 函数在客户端和服务器之间进行双向通信。
+
+需要注意的是，`connect()` 函数是一个阻塞函数，即在连接建立完成之前，它会一直阻塞程序的执行。
+
+### read和write函数：
+
+`read()` 和 `write()` 是在C语言中用于进行文件读取和写入操作的函数。在网络编程中，它们也常用于套接字文件描述符上的数据传输。
+
+1. `read()` 函数：
+   ````c
+   #include <unistd.h>
+   
+   ssize_t read(int fd, void *buf, size_t count);
+   
+   //read() 函数从文件描述符 fd 中读取数据，并将其存储到缓冲区 buf 中。count参数指定要读取的最大字节数。
+   
+   //返回值是实际读取的字节数，如果出现错误，返回值可能为-1。常见的错误包括连接断开、读取超时等。如果返回值为0，表示已到达文件末尾或连接关闭。
+   
+2. `write()` 函数：
+   
+   ````c
+   #include <unistd.h>
+   
+   ssize_t write(int fd, const void *buf, size_t count);
+   
+   //write()函数将缓冲区 buf 中的数据写入到文件描述符 fd 对应的文件或套接字中。count 参数指定要写入的字节数。
+   
+   //返回值是实际写入的字节数，如果出现错误，返回值可能为-1。常见的错误包括连接断开、写入超时等。
+
+在网络编程中，`read()` 和 `write()` 函数通常用于在套接字上进行数据的接收和发送。客户端可以使用 `write()` 函数将数据发送给服务器，服务器则使用 `read()` 函数接收客户端发送的数据。这样可以实现双向通信。
+
+需要注意的是，`read()` 和 `write()` 函数都是阻塞函数，即在读写操作完成之前会一直阻塞程序的执行。
+
+## 3.并发服务器的构建
+
+### fork函数：
+
+`fork()` 函数是一个系统调用，用于在UNIX和类UNIX操作系统中创建一个新的进程。它会复制当前进程（称为父进程），创建一个新的进程（称为子进程），使得父进程和子进程在不同的执行路径上同时执行。
+
+在C语言中，`fork()` 函数的原型如下：
+
+```c
+#include <unistd.h>
+
+pid_t fork(void);
+```
+
+该函数没有参数，返回值是一个进程ID（PID）。在不同的情况下，`fork()` 函数的返回值会有不同的含义：
+
+- 如果返回值为负数，表示创建子进程失败，具体的负数值表示错误的类型。
+
+- 如果返回值为0，表示当前执行的是子进程。子进程可以通过调用 `getpid()` 函数获取自己的进程ID。
+
+- 如果返回值大于0，表示当前执行的是父进程。返回值是子进程的进程ID，父进程可以通过调用 `getpid()` 函数获取自己的进程ID。
+
+`fork()` 函数的执行过程如下：
+
+1. 当调用 `fork()` 函数时，操作系统会创建一个新的进程，复制父进程的代码、数据、堆栈等信息，并为子进程分配一个唯一的进程ID。
+
+2. 子进程从 `fork()` 函数返回的地方开始执行，而父进程继续执行后续的代码。
+
+**在TCP通信中，`fork()` 函数可以用于创建一个子进程，使得父进程和子进程可以同时执行不同的逻辑，实现并发处理客户端连接的需求。**
+
+通常情况下，TCP服务器在接受客户端连接后，会创建一个新的子进程来处理与该客户端的通信。这样可以实现以下的工作流程：
+
+1. 服务器通过调用 `fork()` 函数创建一个子进程。这个子进程是服务器的副本，它继承了父进程的文件描述符、内存等资源。
+
+2. 在子进程中，服务器关闭不需要的文件描述符（如监听套接字），然后开始与客户端进行通信。它可以使用 `read()` 和 `write()` 函数来接收和发送数据。
+
+3. 在父进程中，服务器可以继续监听其他客户端的连接请求。父进程可以在一个循环中等待并接受连接，创建多个子进程来处理不同的客户端连接。
+
+通过使用 `fork()` 函数，服务器可以同时处理多个客户端连接，而不需要串行地处理每个连接请求。这样可以提高服务器的并发性能和响应能力。
+
+### exec函数：
+
+`exec()` 函数是一个系统调用，用于在UNIX和类UNIX操作系统中执行一个新的程序。它会将当前进程替换为新的程序，加载新的可执行文件，并开始执行新的程序的代码。
+
+在C语言中，`exec()` 函数有多个变种，包括 `execl()`、`execv()`、`execle()`、`execve()` 等，它们的使用方式略有不同，但都用于执行新的程序。
+
+以 `execl()` 函数为例，其原型如下：
+
+```c
+#include <unistd.h>
+
+int execl(const char *path, const char *arg, ...);
+```
+
+- `path` 参数是一个字符串，指定要执行的可执行文件的路径。
+- `arg` 参数是一个字符串，指定可执行文件的名称。
+- `...` 表示可变参数，用于传递给可执行文件的命令行参数。
+
+在TCP中，`exec()` 函数通常用于服务器进程在接受客户端连接后，创建一个新的子进程来处理与客户端的通信。
+
+具体的作用如下：
+
+1. 服务器通过调用 `fork()` 函数创建一个子进程。子进程是服务器的副本，它继承了父进程的文件描述符、内存等资源。
+
+2. 在子进程中，服务器关闭不需要的文件描述符（如监听套接字），然后调用 `exec()` 函数来加载并执行新的程序。新的程序可以是另一个可执行文件，它负责与客户端进行通信。
+
+3. 在父进程中，服务器可以继续监听其他客户端的连接请求，创建多个子进程来处理不同的客户端连接。
+
+通过使用 `exec()` 函数，服务器可以在子进程中加载不同的程序来处理与客户端的通信。这样可以实现灵活的服务器架构，使得服务器可以根据不同的需求选择不同的处理逻辑。
+
+使用 `exec()` 函数的优势是可以动态地加载不同的程序，而不需要重新编译和链接整个服务器代码。这样可以实现服务器的模块化和可扩展性。
+
+总结起来，`exec()` 函数在TCP连接中的作用是创建一个新的子进程，并用新的程序替换子进程的执行环境，以实现不同的处理逻辑。这样可以让服务器根据不同的客户端需求动态地加载和执行不同的程序，提供灵活和可扩展的服务。
+
