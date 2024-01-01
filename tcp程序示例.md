@@ -1,6 +1,26 @@
-# tcp程序示例
+# 高级C语言网络编程
 
-## 1.server端
+**概述**
+
+C语言网络编程的范围涵盖了使用C语言进行网络通信的各个方面。它包括使用套接字（sockets）API进行底层网络编程，以及构建网络应用程序的高级概念和技术。
+
+1. 套接字编程：使用`socket()`函数创建套接字、使用`bind()`函数绑定套接字到本地地址、使用`listen()`函数监听连接请求、使用`accept()`函数接受连接请求等。
+
+2. 传输层协议：如TCP（传输控制协议）和UDP（用户数据报协议）。TCP提供可靠的、面向连接的通信，而UDP提供无连接的、不可靠的通信。
+
+3. 网络地址转换：进行主机字节序和网络字节序之间的转换。使用函数如`htonl()`、`htons()`、`ntohl()`和`ntohs()`等，用于在主机字节序和网络字节序之间进行转换。
+
+4. 多线程和并发：网络编程中，多线程和并发技术常用于同时处理多个客户端请求。C语言提供了线程库（如pthread）以及相关的同步机制（如互斥锁和条件变量），用于实现多线程和并发编程。
+
+5. 客户端-服务器模型：C语言网络编程通常涉及构建客户端和服务器应用程序。客户端向服务器发起连接请求，服务器接受请求并提供服务。这涉及到使用套接字编程进行双向通信、处理并发连接、实现基本的协议等。
+
+6. 网络协议和协议栈：C语言网络编程需要了解各种网络协议和协议栈的工作原理。这包括了解IP协议、TCP协议、UDP协议以及其他常用的网络协议。
+
+
+
+## 1、CS的构建
+
+### 1、server端
 
 ``` C
 #include <stdio.h>
@@ -81,7 +101,7 @@ int main()
 }
 ```
 
-### bind函数：
+#### bind函数：
 
 `bind()` 函数是用于将一个套接字与特定的地址进行绑定的操作。它将一个本地地址（包括 IP 地址和端口号）与套接字相关联，使得该套接字能够监听和接受来自该地址的连接请求，或者发送数据到该地址。
 
@@ -101,7 +121,7 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 需要注意的是，一旦套接字绑定成功，就不能再次绑定到同一个地址。如果需要重新绑定，必须先关闭之前的套接字。
 
-### listen函数：
+#### listen函数：
 
 `listen()` 函数用于将一个套接字设置为监听状态，以便接受客户端的连接请求。它将套接字标记为被动套接字，即用于接受传入连接的套接字。
 
@@ -122,7 +142,7 @@ int listen(int sockfd, int backlog);
 
 需要注意的是，只有在调用 `listen()` 函数之后，才能使用 `accept()` 函数来接受客户端的连接请求。
 
-### accept函数：
+#### accept函数：
 
 `accept()` 函数用于接受客户端的连接请求，并创建一个新的套接字用于与客户端进行通信。它在服务器端被调用，用于建立与客户端之间的连接。
 
@@ -144,7 +164,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 注意：`accept()` 函数在成功接受连接请求后，会产生一个新的套接字，而原始的监听套接字仍然保持在监听状态，可以继续接受其他客户端的连接请求。
 
-## 2.client端
+### 2.client端
 
 ~~~ c
 #include <stdio.h>
@@ -213,7 +233,7 @@ int main()
 
 ~~~
 
-### socket函数：
+#### socket函数：
 
 `socket()` 函数是一个系统调用，用于创建一个新的套接字（socket）。
 
@@ -238,7 +258,7 @@ int socket(int domain, int type, int protocol);
 
 使用 `socket()` 函数创建套接字后，可以通过其他函数（例如 `bind()`、`listen()`、`connect()`）来设置套接字的相关属性和进行进一步的操作，以实现网络通信的需求。
 
-### connect函数：
+#### connect函数：
 
 `connect()` 函数用于建立与远程服务器的连接，将本地套接字与远程服务器的套接字进行关联，从而实现网络通信。
 
@@ -271,7 +291,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 需要注意的是，`connect()` 函数是一个阻塞函数，即在连接建立完成之前，它会一直阻塞程序的执行。
 
-### read和write函数：
+#### read和write函数：
 
 `read()` 和 `write()` 是在C语言中用于进行文件读取和写入操作的函数。在网络编程中，它们也常用于套接字文件描述符上的数据传输。
 
@@ -300,9 +320,9 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 需要注意的是，`read()` 和 `write()` 函数都是阻塞函数，即在读写操作完成之前会一直阻塞程序的执行。
 
-## 3.并发服务器的构建
+### 3.并发服务器的构建
 
-### fork函数：
+#### fork函数：
 
 `fork()` 函数是一个系统调用，用于在UNIX和类UNIX操作系统中创建一个新的进程。它会复制当前进程（称为父进程），创建一个新的进程（称为子进程），使得父进程和子进程在不同的执行路径上同时执行。
 
@@ -340,7 +360,7 @@ pid_t fork(void);
 
 通过使用 `fork()` 函数，服务器可以同时处理多个客户端连接，而不需要串行地处理每个连接请求。这样可以提高服务器的并发性能和响应能力。
 
-### exec函数：
+#### exec函数：
 
 `exec()` 函数是一个系统调用，用于在UNIX和类UNIX操作系统中执行一个新的程序。它会将当前进程替换为新的程序，加载新的可执行文件，并开始执行新的程序的代码。
 
@@ -374,3 +394,194 @@ int execl(const char *path, const char *arg, ...);
 
 总结起来，`exec()` 函数在TCP连接中的作用是创建一个新的子进程，并用新的程序替换子进程的执行环境，以实现不同的处理逻辑。这样可以让服务器根据不同的客户端需求动态地加载和执行不同的程序，提供灵活和可扩展的服务。
 
+## TIME-WAIT状态
+
+TIME_WAIT状态是TCP协议中的一种状态，它出现在TCP连接的关闭过程中。当一台主机（通常是客户端）主动关闭TCP连接时，它会进入TIME_WAIT状态，并在一段时间内保持这个状态。
+
+TIME_WAIT状态的存在是为了确保网络中的所有分组都能够正常传递和处理完毕，以防止出现连接复用时的混淆。在TIME_WAIT状态下，主机将继续接收来自对端的可能残留的分组，同时等待一段时间，以确保对端收到了自己发送的最后一个确认分组（ACK）。
+
+TIME_WAIT状态的持续时间通常由TCP协议栈的实现决定，一般为2倍的最大报文段生存时间（2MSL，Maximum Segment Lifetime），MSL是一个估计的报文在网络中存活的最长时间。这段时间内，连接的端口号会被保留，以避免与后续连接冲突。
+
+TIME_WAIT状态的作用是：
+
+1. 确保连接的双方都能够正常关闭连接，避免数据的丢失或重复。
+
+2. 防止旧的连接分组在网络中延迟到达并被错误地应用到后续连接。
+
+3. 允许先前连接的所有分组在网络中被丢弃，以确保后续连接不会受到干扰。
+
+在某些情况下，TIME_WAIT状态的持续时间可能会导致一些问题，例如端口资源耗尽或无法快速重启服务。在这种情况下，可以通过调整操作系统的TCP参数来缩短TIME_WAIT状态的持续时间，或使用SO_REUSEADDR套接字选项来允许更快地重用端口。但需要注意，对TIME_WAIT状态的调整应慎重进行，以避免可能的连接混乱和数据冲突。
+
+# 2、基本套接字编程
+
+## 1、iPv4套接字地址结构
+
+在IPv4套接字编程中，使用的地址结构是`struct sockaddr_in`，该结构定义在`<netinet/in.h>`头文件中。`struct sockaddr_in`包含以下成员：
+
+```c
+struct sockaddr_in {
+    sa_family_t sin_family;     // 地址族，一般为 AF_INET
+    in_port_t sin_port;         // 16位端口号，使用网络字节序
+    struct in_addr sin_addr;    // 32位IPv4地址，使用网络字节序
+    char sin_zero[8];           // 用于填充，一般置为0
+};
+```
+
+其中，`sa_family`表示地址族，通常为`AF_INET`表示IPv4地址族。
+
+`sin_port`是16位的端口号，用于标识应用程序中的特定服务。通常使用`htons`函数将主机字节序的端口号转换为网络字节序。
+
+`sin_addr`是一个`struct in_addr`类型的结构体，用于保存32位的IPv4地址。`struct in_addr`定义如下：
+
+```c
+struct in_addr {
+    in_addr_t s_addr;    // 32位IPv4地址，使用网络字节序
+};
+```
+
+`sin_zero`是一个8字节的填充字段，一般用于对齐。
+
+在套接字编程中，通常使用`struct sockaddr_in`来表示IPv4的地址信息，将其作为参数传递给函数，例如`bind`、`connect`、`accept`等函数。在使用之前，需要将IP地址和端口号进行适当的转换，使其符合网络字节序。
+
+示例：
+
+```c
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+int main() {
+    struct sockaddr_in server_addr;
+    
+    // 设置IPv4地址族
+    server_addr.sin_family = AF_INET;
+    
+    // 设置端口号，将本地字节序转换为网络字节序
+    server_addr.sin_port = htons(8080);
+    
+    // 设置IPv4地址，将点分十进制的IP地址转换为网络字节序
+    inet_pton(AF_INET, "192.168.0.1", &(server_addr.sin_addr));
+    
+    // 其他字段置零
+    memset(server_addr.sin_zero, 0, sizeof(server_addr.sin_zero));
+    
+    return 0;
+}
+```
+
+## 2、字节排序函数
+
+### 1、大小端的区别
+
+大小端（Endianness）是指在存储多字节数据时，字节的顺序排列方式。它决定了多字节数据的最低有效字节（LSB，Least Significant Byte）和最高有效字节（MSB，Most Significant Byte）的存储顺序。
+
+主要有两种类型的大小端：
+
+1. 大端序（Big-Endian）：在大端序中，最高有效字节（MSB）存储在最低的内存地址，最低有效字节（LSB）存储在最高的内存地址。类比人类读写数字时，先读取最高位，再逐渐向低位读取。
+
+2. 小端序（Little-Endian）：在小端序中，最低有效字节（LSB）存储在最低的内存地址，最高有效字节（MSB）存储在最高的内存地址。类比人类读写数字时，先读取最低位，再逐渐向高位读取。
+
+这种字节序的差异主要体现在多字节数据类型（如整数、浮点数）的存储和传输中，特别是在不同的计算机体系结构之间。在网络通信中，一般使用大端序作为网络字节序（Network Byte Order）。
+
+例如，对于16位整数值0x1234来说：
+
+- 在大端序中，高字节0x12存储在低地址，低字节0x34存储在高地址。
+
+- 在小端序中，低字节0x34存储在低地址，高字节0x12存储在高地址。
+
+需要注意的是，大小端只涉及多字节数据的存储方式，对于单个字节的数据（如字符），大小端的问题并不适用。
+
+在实际编程中，当涉及到跨平台数据传输或存储时，需要考虑大小端的问题，以确保数据的正确解析和处理。
+
+### 2、字节序
+
+主机字节序（Host Byte Order）和网络字节序（Network Byte Order）是用于描述数据在不同主机之间传输和存储时的字节顺序。
+
+- 主机字节序：主机字节序是指当前计算机体系结构所使用的字节序。对于大多数个人计算机和服务器，主机字节序通常与处理器的字节序相同。例如，x86架构的计算机通常使用小端序（Little-Endian）作为主机字节序，而PowerPC架构的计算机通常使用大端序（Big-Endian）作为主机字节序。
+
+- 网络字节序：网络字节序是一种标准化的字节序，用于在不同主机之间进行数据传输和协议交互。它使用大端序（Big-Endian）作为统一的字节序。因此，在网络通信中，数据需要以网络字节序进行传输和解析，以确保不同主机之间的互操作性。
+
+在网络编程中，为了保证数据在不同主机之间的正确传输和解析，常常需要进行主机字节序与网络字节序之间的转换。这可以通过使用字节序转换函数（如`htons`、`htonl`、`ntohs`、`ntohl`）来实现，将数据从主机字节序转换为网络字节序进行发送，然后在接收端再将数据从网络字节序转换回主机字节序进行解析和处理。
+
+总结起来，主机字节序是当前计算机所使用的字节序，而网络字节序是一种统一的字节序，用于在网络中进行数据交换和协议通信。字节序转换函数用于在主机字节序和网络字节序之间进行转换，以确保数据的正确性和跨平台的互操作性。
+
+## iPv4和iPv6的转换
+
+`inet_pton`和`inet_ntop`是用于IPv4和IPv6地址转换的函数，用于在网络地址表示形式和字符串表示形式之间进行转换。
+
+1. `inet_pton`（Presentation to Network）函数用于将字符串表示的网络地址转换为用于存储和传输的二进制形式。
+
+```c
+#include <arpa/inet.h>
+
+int inet_pton(int af, const char *src, void *dst);
+```
+
+- `af`：地址族（Address Family），指定地址的类型，可以是`AF_INET`（IPv4）或`AF_INET6`（IPv6）。
+- `src`：包含网络地址的字符串表示形式。
+- `dst`：指向存储转换结果的内存缓冲区。
+
+函数返回值为：
+- 1：转换成功。
+- 0：输入地址无效。
+- -1：转换失败，发生错误。
+
+示例用法：
+
+```c
+#include <stdio.h>
+#include <arpa/inet.h>
+
+int main() {
+    const char* ip_address = "192.0.2.1";
+    struct in_addr dst;
+
+    if (inet_pton(AF_INET, ip_address, &dst) == 1) {
+        printf("IPv4 address: 0x%X\n", dst.s_addr);
+    } else {
+        printf("Invalid address\n");
+    }
+
+    return 0;
+}
+```
+
+2. `inet_ntop`（Network to Presentation）函数用于将存储和传输的二进制形式网络地址转换为字符串表示形式。
+
+```c
+#include <arpa/inet.h>
+
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+```
+
+- `af`：地址族，指定地址的类型，可以是`AF_INET`（IPv4）或`AF_INET6`（IPv6）。
+- `src`：指向存储网络地址的二进制形式的内存缓冲区。
+- `dst`：指向存储转换结果的字符数组。
+- `size`：`dst`缓冲区的大小。
+
+函数返回值为：
+- 非空指针：转换成功，返回指向转换结果的指针（即`dst`）。
+- 空指针：转换失败，发生错误。
+
+示例用法：
+
+```c
+#include <stdio.h>
+#include <arpa/inet.h>
+
+int main() {
+    struct in_addr addr;
+    addr.s_addr = htonl(0xC0000201); // 192.0.2.1
+
+    char ip_address[INET_ADDRSTRLEN];
+
+    if (inet_ntop(AF_INET, &addr, ip_address, INET_ADDRSTRLEN) != NULL) {
+        printf("IPv4 address: %s\n", ip_address);
+    } else {
+        printf("Conversion failed\n");
+    }
+
+    return 0;
+}
+```
+
+这两个函数在网络编程中经常用于将字符串形式的IP地址转换为二进制形式（`inet_pton`），或将二进制形式的IP地址转换为字符串形式（`inet_ntop`）。它们提供了方便的方法来处理网络地址的转换和表示。
