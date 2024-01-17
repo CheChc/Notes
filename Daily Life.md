@@ -449,3 +449,62 @@ pytz==2020.1
 six==1.15.0
 sqlparse==0.3.1
 ```
+
+# 9 、Makefile的使用
+
+Makefile是用于在unix/Linux编译下的一种脚本式的方法
+
+## 1、具体语法
+
+想生成的文件：源文件
+
+​	生成方法
+
+## 2、实际应用
+
+``` makefile
+CC = g++
+CFLAGS = -O2 -D_REENTRANT -w
+out: main.o loadDatafromFile.o sumData.o displayData.o calculateMean.o calculateVariance.o leastSquareFit.o loginUser.o registerUser.o isUsernameExists.o
+	$(CC) $(CFLAGS) -o out main.o loadDatafromFile.o sumData.o displayData.o calculateMean.o calculateVariance.o leastSquareFit.o loginUser.o registerUser.o isUsernameExists.o
+
+main.o: main.cpp
+	$(CC) $(CFLAGS) -c main.cpp
+
+loadDatafromFile.o: loadDatafromFile.cpp
+	$(CC) $(CFLAGS) -c loadDatafromFile.cpp
+
+sumData.o: sumData.cpp
+	$(CC) $(CFLAGS) -c sumData.cpp
+
+displayData.o: displayData.cpp
+	$(CC) $(CFLAGS) -c displayData.cpp
+
+calculateMean.o: calculateMean.cpp
+	$(CC) $(CFLAGS) -c calculateMean.cpp
+
+calculateVariance.o: calculateVariance.cpp
+	$(CC) $(CFLAGS) -c calculateVariance.cpp
+
+leastSquareFit.o: leastSquareFit.cpp
+	$(CC) $(CFLAGS) -c leastSquareFit.cpp
+
+loginUser.o: loginUser.cpp
+	$(CC) $(CFLAGS) -c loginUser.cpp
+
+registerUser.o: registerUser.cpp
+	$(CC) $(CFLAGS) -c registerUser.cpp
+
+isUsernameExists.o: isUsernameExists.cpp
+	$(CC) $(CFLAGS) -c isUsernameExists.cpp
+
+clean:
+	rm -f *.o out
+```
+
+ 生成out可执行文件，由生成的.o文件链接而成
+
+生成的.o文件，是由cpp文件生成的
+
+Makefile的核心原理，是自顶向下的，也就是说，第一个想生成的文件就是最终文件了
+
