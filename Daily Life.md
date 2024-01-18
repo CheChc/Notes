@@ -194,6 +194,34 @@ etc文件夹包含了各种应用程序、服务和用户配置信息等等。
 
 `git push -f origin main`
 
+#### SSH失效的方法
+
+在很多时候，SSH登录也会有失效的时候
+
+解决方法：
+
+1、查看远程仓库
+
+​     ```git remote -v ```
+
+2、出现
+
+``` shell
+origin	git@github.com:YANG-DEMIN/learngit.git (fetch)
+origin	git@github.com:YANG-DEMIN/learngit.git (push)
+```
+
+
+
+大概率是因为SSH
+
+3、重新配置HTTP
+
+```shell
+$ git remote rm origin
+$ git remote add origin add https://github.com/YANG-DEMIN/learngit
+```
+
 ### 2、查看相关远程库
 
 `git remote -v`
