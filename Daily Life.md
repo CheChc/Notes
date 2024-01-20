@@ -60,6 +60,46 @@ copy后使用`p`|`P`粘贴
 
 可以看作是Java的一个安装目录，告诉系统和应用程序Java安装的位置。
 
+## 链表
+
+> java中，没有对于指针的定义，只需要使用正常定义
+
+### 结构
+
+``` java
+public class LinkNode
+{
+  int val;
+  LinkNode next;
+}
+```
+
+> 在其中存在两个变量，存储值val和指向下一个节点的指针next
+
+### 读和写
+
+对于链表的操作需要使用两个指针，head和current，head指头节点，current指当前正在操作的节点
+
+在输入时，首先考虑头节点是否为空，若为空则首先为头节点赋值，否则操作current节点进行赋值
+
+两个操作都要在结束后更新current节点的位置。
+
+**head：**
+
+```java
+head = node;
+current = node;
+```
+
+**current**
+
+```java
+current.next = node;
+current = node;
+```
+
+
+
 # 4、Linux
 
 ## 1、zsh的使用
