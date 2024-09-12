@@ -56,3 +56,12 @@ socket（不同主机）
 ## GIT
 
 Git合并分支的方式主要有两种，分别是Merge和Rebase。 解答思路：Merge是将两个分支的修改合并到一起，创建一个新的合并提交，保留了分支的commit历史。Rebase则是将当前分支的commit逐个应用到目标分支上，使得目标分支的commit历史更加线性清晰。选择Merge还是Rebase取决于项目的具体情况和团队的工作流程。 
+
+## MySQL
+
+关闭、开启服务的方法:
+
+``` she
+service start/stop mysql
+```
+
