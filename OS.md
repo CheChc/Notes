@@ -65,3 +65,13 @@ Git合并分支的方式主要有两种，分别是Merge和Rebase。 解答思�
 service start/stop mysql
 ```
 
+## Nginx
+
+启动方法：
+
+首先进入/usr/local/nginx/sbin
+
+`./nginx`
+
+即可开启nginx
+
