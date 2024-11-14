@@ -450,3 +450,9 @@ git rm -r --cache .
 git add -A
 
 git push ……
+### 强行同步远程仓库
+
+对于本地的项目中修改不做保存操作（或代码改崩），可以用到Git pull的强制覆盖，具体代码如下：
+
+git fetch --all
+git reset --hard origin/master
